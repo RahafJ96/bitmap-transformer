@@ -16,7 +16,6 @@ public class App{
         String transform = args[2].toLowerCase();
         Bitmap bitmap = null;
 
-        // Try to read in file from CLI argument
         try {
             bitmap = new Bitmap(inputFilePath, outputFilePath);
         } catch (IOException e) {
@@ -26,11 +25,20 @@ public class App{
 
         // Perform transform based on CLI argument
         switch (transform) {
-            case "blackgreen": Bitmap.reverseBlackAndGreen(); break;
-            case "random": Bitmap.random(); break;
-            case "stretchvertically": Bitmap.stretchVertically(); break;
-            case "stretchvorizontally": Bitmap.stretchHorizontally(); break;
-            default : System.out.println("Invalid Transform. Choices are: 'blackwhite', 'random', 'stretchvertically','stretchvorizontally'.");
+            case "blackgreen":
+                Bitmap.reverseBlackAndGreen();
+                break;
+            case "random":
+                Bitmap.random();
+                break;
+            case "stretchvertically":
+                Bitmap.stretchVertically();
+                break;
+            case "stretchvorizontally":
+                Bitmap.stretchHorizontally();
+                break;
+            default:
+                System.out.println("Invalid Transform. Choices are: 'blackwhite', 'random', 'stretchvertically','stretchvorizontally'.");
         }
 
         // Try to save in file

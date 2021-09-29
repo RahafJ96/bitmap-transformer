@@ -23,6 +23,8 @@ public class Bitmap {
     public Bitmap(String inputPath, String outputPath) throws IOException {
 
         imageOutputPath = Paths.get(outputPath);
+
+
         Path bitMapInPath = Paths.get(inputPath);
         imageData = ImageIO.read(bitMapInPath.toFile());
 
