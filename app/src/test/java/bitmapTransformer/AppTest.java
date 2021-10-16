@@ -5,75 +5,82 @@ package bitmapTransformer;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-//import static org.junit.Assert.*;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
-
-public class AppTest {
+class AppTest {
 
     @Test
-    public void testGreenBlack() throws IOException {
-        BufferedImage dummyImage = Bitmap.dummyBitMap();
-
-        String outputFilePath = "C:\\Users\\STUDENT\\401Java\\bitmap-transformer\\app\\src\\test\\resources\\testGreenBlack.bmp";
-        Bitmap.setImageData(dummyImage, outputFilePath);
-
-        Bitmap.reverseBlackAndGreen();
-        Bitmap.save();
-
-        Path newBitMapInPath = Paths.get(outputFilePath);
-
-        BufferedImage newImageData = ImageIO.read(newBitMapInPath.toFile());
-
-        Color black = new Color(0, 0, 0);
-//        Color white = new Color(255, 255, 255);
-        Color green = new Color(46, 255, 0);
-
-        assertEquals(green.getRGB(), newImageData.getRGB(0, 0),"This test should return a green color");
-        assertEquals(black.getRGB(), newImageData.getRGB(0, 3),"This test should return a black color");
-
-    }
-
-
-
-    @Test
-    public void testStretchVertically() throws IOException {
-        BufferedImage dummyImage = Bitmap.dummyBitMap();
-
-        String outputFilePath = "C:\\Users\\STUDENT\\401Java\\bitmap-transformer\\app\\src\\test\\resources\\testStretchVertically.bmp";
-        Bitmap.setImageData(dummyImage, outputFilePath);
-
-        Bitmap.stretchVertically();
-        Bitmap.save();
-
-        Path newBitMapInPath = Paths.get(outputFilePath);
-
-        BufferedImage newImageData = ImageIO.read(newBitMapInPath.toFile());
-
-        assertEquals(8, newImageData.getHeight(),"This test should return a height of 8");
+    public void mirrorImage() {
+        Bitmap bitmap = new Bitmap();
+        bitmap.mirrorImage(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_normal.jpg"),
+                new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_Mirror.jpg"));
+        try {
+            BufferedImage soursImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_normal.jpg"));
+            BufferedImage targetImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_Mirror.jpg"));
+            int soursWidth = soursImage.getWidth();
+            int targetWidth = targetImage.getWidth();
+            assertEquals(soursWidth*2 ,targetWidth,"Target Image Width should be double the source Image Width (targetWidth = soursWidth*2 )." );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Test
-    public void testStretchHorizontally() throws IOException {
-        BufferedImage dummyImage = Bitmap.dummyBitMap();
+    public void rotate90(){
+        Bitmap bitmap = new Bitmap();
+        bitmap.rotate90(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_normal.jpg"),
+                new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_Rotate.jpg") , +1);
+        try {
+            BufferedImage soursImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_normal.jpg"));
+            BufferedImage targetImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\Car_Rotate.jpg"));
+            int soursWidth = soursImage.getWidth();
+            int targetHeight = targetImage.getHeight();
+            assertEquals(soursWidth ,targetHeight,"Target Image Height should be the same as the source Image Width (targetHeight = soursWidth )." );
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 
-        String outputFilePath = "C:\\Users\\STUDENT\\401Java\\bitmap-transformer\\app\\src\\test\\resources\\testStretchHorizontally.bmp";
-        Bitmap.setImageData(dummyImage, outputFilePath);
+    @Test
+    public void darken(){
+        Bitmap bitmap = new Bitmap();
+        bitmap.darken(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImage.bmp"),
+                new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImageDarken.bmp"));
+        try {
+            BufferedImage soursImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImage.bmp"));
+            BufferedImage targetImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImageDarken.bmp"));
+            Color rgb = new Color(soursImage.getRGB(0,0));
+            rgb = rgb.darker();
+            Color rgbDarken = new Color(targetImage.getRGB(0,0));
+            assertEquals(rgb.getRGB(),rgbDarken.getRGB() ,"The first pixel in the target image should be darker than the The first pixel in the source image");
 
-        Bitmap.stretchHorizontally();
-        Bitmap.save();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
-        Path newBitMapInPath = Paths.get(outputFilePath);
+    }
 
-        BufferedImage newImageData = ImageIO.read(newBitMapInPath.toFile());
+    @Test
+    public void lighten(){
+        Bitmap bitmap = new Bitmap();
+        bitmap.lighten(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImage.bmp"),
+                new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImageLighten.bmp"));
+        try {
+            BufferedImage soursImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImage.bmp"));
+            BufferedImage targetImage = ImageIO.read(new File("C:\\Users\\AB\\401course\\bitmap-transformer\\app\\src\\main\\resources\\BmpImageLighten.bmp"));
+            Color rgb = new Color(soursImage.getRGB(0,0));
+            rgb = rgb.brighter();
+            Color rgbDarken = new Color(targetImage.getRGB(0,0));
+            assertEquals(rgb.getRGB(),rgbDarken.getRGB(),"The first pixel in the target image should be brighter than the The first pixel in the source image");
 
-        assertEquals(8, newImageData.getWidth(),"This test should return a width of 8");
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
     }
 }
