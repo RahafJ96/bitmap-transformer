@@ -1,161 +1,182 @@
 package bitmapTransformer;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Iterator;
 
 public class Bitmap {
 
-    private static Path imageOutputPath;
-    private static BufferedImage imageData;
-    private static BufferedImage newImage;
+    private static final int ROTATE_LEFT = 1;
+    private static final int ROTATE_RIGHT = -1;
+
+    private int width = 0;
+    private int height = 0;
+
+    private BufferedImage fromDiskImage;
+    private BufferedImage toDiskImage;
 
     /**
-     * Bitmap constructor
      *
-     * @param inputPath  give it the path for the file
-     * @param outputPath give it the path for the newly created file
-     * @throws IOException error for the ImageIO.read method
+     * @param width Width of the image
+     * @param height Height of the image
      */
-    public Bitmap(String inputPath, String outputPath) throws IOException {
-
-        imageOutputPath = Paths.get(outputPath);
-
-
-        Path bitMapInPath = Paths.get(inputPath);
-        imageData = ImageIO.read(bitMapInPath.toFile());
-
+    public Bitmap(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
-    /**
-     * convert all black colors to green and all white colors to black
-     */
-    public static void reverseBlackAndGreen() {
-        int height = imageData.getHeight();
-        int width = imageData.getWidth();
-
-
-        Color black = new Color(0, 0, 0);
-        Color white = new Color(255, 255, 255);
-        Color green = new Color(46, 255, 0);
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int color = imageData.getRGB(x, y);
-
-                if (color == black.getRGB()) {
-                    imageData.setRGB(x, y, green.getRGB());
-                } else if (color == white.getRGB()) {
-                    imageData.setRGB(x, y, black.getRGB());
-                }
-            }
-        }
-    }
-
-    /**
-     * stretch the image Vertically (double the height)
-     */
-    public static void stretchVertically() {
-        int height = imageData.getHeight();
-        int heightM = (height * 2);
-        int width = imageData.getWidth();
-        newImage = new BufferedImage(width, heightM, BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < heightM; y++) {
-                int color = imageData.getRGB(x, y / 2);
-
-                newImage.setRGB(x, y, color);
-                y++;
-                if (y != heightM) {
-                    newImage.setRGB(x, y, color);
-                }
-            }
-        }
-    }
-
-    /**
-     * stretch the image Horizontally (double the width)
-     */
-    public static void stretchHorizontally() {
-        int height = imageData.getHeight();
-        int width = imageData.getWidth();
-        int widthM = (width * 2);
-        newImage = new BufferedImage(widthM, height, BufferedImage.TYPE_INT_RGB);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < widthM; x++) {
-                int color = imageData.getRGB(x / 2, y);
-
-                newImage.setRGB(x, y, color);
-                x++;
-                if (x != widthM) {
-                    newImage.setRGB(x, y, color);
-                }
-            }
-        }
-    }
-
-    /**
-     * change every color randomly by dividing the current color by two
-     */
-    public static void random() {
-        int height = imageData.getHeight();
-        int width = imageData.getWidth();
-        int rgb;
-
-        for (int y = 1; y < height; y++) {
-            for (int x = 1; x < width; x++) {
-                rgb = imageData.getRGB(x, y) / 2;
-                imageData.setRGB(x, y, rgb);
-            }
-        }
-    }
-
-    /**
-     * create a dummy image for testing
-     * @return Bitmap
-     */
-    public static BufferedImage dummyBitMap() {
-        BufferedImage dummyImage = new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB);
-
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 4; x++) {
-                if (y < 2) {
-                    dummyImage.setRGB(x, y, Color.BLACK.getRGB());
-                } else {
-                    dummyImage.setRGB(x, y, Color.WHITE.getRGB());
-                }
-
-            }
-        }
-        return dummyImage;
-    }
-
-    /**
-     * constructor for testing
-     * @param image the dummy image
-     * @param outputPath the resources test folder
-     */
-    public static void setImageData(BufferedImage image, String outputPath) {
-        imageData = image;
-        imageOutputPath = Paths.get(outputPath);
+    public Bitmap() {
     }
 
 
     /**
-     * save the changed images or the newly created ones
      *
-     * @throws IOException error for ImageIO.write
+     * @param imagePath Image path to be read
+     *
      */
-    public static void save() throws IOException {
+    private void readImage(File imagePath) {
+        if (width != 0 && height != 0)
+            fromDiskImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        try {
+            System.out.println("Read Image: " + imagePath);
+            fromDiskImage = ImageIO.read(imagePath);
+        } catch (IOException ioException) {
+            System.out.println(ioException.getMessage());
 
-        ImageIO.write(imageData, "bmp", imageOutputPath.toFile());
-        if (newImage != null) {
-            ImageIO.write(newImage, "bmp", imageOutputPath.toFile());
         }
+    }
 
-        System.out.println("Saved file to: " + imageOutputPath);
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @param toFile Saved image file reference
+     */
+    private void writeImage(File fromFile, File toFile) {
+        try {
+            String format = getFormat(fromFile);
+            ImageIO.write(toDiskImage, format, toFile);
+            System.out.println("Saved Image in: "+toFile);
+        } catch (IOException ioException) {
+            System.out.println(ioException.getMessage());
+        }
+    }
+
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @return Returns Source image format (String)
+     */
+    private String getFormat(File fromFile) {
+        String format = "";
+        try {
+            ImageInputStream iis = ImageIO.createImageInputStream(fromFile);
+            Iterator<ImageReader> iterator = ImageIO.getImageReaders(iis);
+            ImageReader reader = iterator.next();
+            format = reader.getFormatName();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return format;
+    }
+
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @param toFile Saved image file reference
+     * @param direction Direction of rotation either 1 or -1 (Left || Right)
+     */
+    public void rotate90(File fromFile, File toFile, int direction) {
+
+        if (direction != ROTATE_LEFT && direction != ROTATE_RIGHT) {
+            System.out.println("Direction should be either 1 or -1");
+        } else {
+            readImage(fromFile);
+            int width = fromDiskImage.getWidth();
+            int height = fromDiskImage.getHeight();
+            System.out.printf("width: %s, Height: %s\n", width, height);
+            toDiskImage = new BufferedImage(height, width, fromDiskImage.getType());
+
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    if (direction == ROTATE_LEFT)
+                        toDiskImage.setRGB(y, (width - 1) - x, fromDiskImage.getRGB(x, y));
+                    else toDiskImage.setRGB((height - 1) - y, x, fromDiskImage.getRGB(x, y));
+
+            writeImage(fromFile, toFile);
+        }
+    }
+
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @param toFile Saved image file reference
+     */
+    public void mirrorImage(File fromFile, File toFile) {
+
+        readImage(fromFile);
+        int width = fromDiskImage.getWidth();
+        int height = fromDiskImage.getHeight();
+        toDiskImage = new BufferedImage(width * 2, height, fromDiskImage.getType());
+
+        for (int y = 0; y < height; y++)
+            for (int lx = 0, rx = width * 2 - 1; lx < width; lx++, rx--) {
+                int pixel = fromDiskImage.getRGB(lx, y);
+
+                toDiskImage.setRGB(lx, y, pixel);
+                toDiskImage.setRGB(rx, y, pixel);
+            }
+
+        writeImage(fromFile, toFile);
+    }
+
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @param toFile Saved image file reference
+     */
+    public void darken(File fromFile, File toFile) {
+
+        readImage(fromFile);
+        int width = fromDiskImage.getWidth();
+        int height = fromDiskImage.getHeight();
+        toDiskImage = new BufferedImage(width, height, fromDiskImage.getType());
+        Color darkerColor;
+
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++) {
+                darkerColor = new Color(fromDiskImage.getRGB(x, y));
+                darkerColor = darkerColor.darker();
+                toDiskImage.setRGB(x, y, darkerColor.getRGB());
+            }
+
+        writeImage(fromFile, toFile);
+    }
+
+    /**
+     *
+     * @param fromFile Source image file reference
+     * @param toFile Saved image file reference
+     */
+    public void lighten(File fromFile, File toFile) {
+
+        readImage(fromFile);
+        int width = fromDiskImage.getWidth();
+        int height = fromDiskImage.getHeight();
+        toDiskImage = new BufferedImage(width, height, fromDiskImage.getType());
+        Color lighterColor;
+
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++) {
+                lighterColor = new Color(fromDiskImage.getRGB(x, y));
+                lighterColor = lighterColor.brighter();
+                toDiskImage.setRGB(x, y, lighterColor.getRGB());
+            }
+
+        writeImage(fromFile, toFile);
     }
 }
